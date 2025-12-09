@@ -1,0 +1,48 @@
+{
+    "name": "mpap/laravel-sms-api-mailer",
+    "description": "Laravel Mail Transport para SMS API do MPAP",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "mail",
+        "transport",
+        "sms-api",
+        "mpap"
+    ],
+    "authors": [
+        {
+            "name": "MPAP - DSIS",
+            "email": "dsis@mpap.mp.br"
+        }
+    ],
+    "require": {
+        "php": "^8.1|^8.2|^8.3",
+        "illuminate/mail": "^10.0|^11.0",
+        "illuminate/support": "^10.0|^11.0",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "orchestra/testbench": "^8.0|^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mpap\\LaravelSmsApiMailer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Mpap\\LaravelSmsApiMailer\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mpap\\LaravelSmsApiMailer\\SmsApiServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
