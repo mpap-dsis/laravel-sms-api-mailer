@@ -13,7 +13,37 @@ Transport customizado do Laravel Mail para integração com a API de envio de e-
 
 ## Instalação
 
-### Via Composer
+### Via Repositório Git (Recomendado para MPAP)
+
+Se o pacote ainda não está publicado no Packagist, você precisa configurar o repositório Git no `composer.json`:
+
+**1. Adicione o repositório ao `composer.json`:**
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/mpap-dsis/laravel-sms-api-mailer"
+        }
+    ],
+    "require": {
+        "mpap/laravel-sms-api-mailer": "dev-main"
+    }
+}
+```
+
+**2. Instale o pacote:**
+
+```bash
+composer require mpap/laravel-sms-api-mailer:dev-main
+```
+
+**Nota:** Use `dev-main` para instalar a partir da branch main, ou `^1.0` se houver uma versão com tag no repositório.
+
+### Via Packagist (Após Publicação)
+
+Quando o pacote estiver publicado no Packagist:
 
 ```bash
 composer require mpap/laravel-sms-api-mailer
@@ -175,6 +205,93 @@ class MinhaNotification extends Notification
             ->subject('Assunto da Notificação')
             ->line('Conteúdo da notificação');
     }
+}
+```
+
+### Envio com Anexos
+
+O pacote suporta envio de anexos através da classe `Attachment`:
+
+```php
+<?php
+
+namespace App\Mail;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
+
+class NotificacaoComAnexo extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    public function __construct(
+        public string $arquivoPath
+    ) {
+    }
+
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            subject: 'E-mail com Anexo',
+        );
+    }
+
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.notificacao',
+        );
+    }
+
+    public function attachments(): array
+    {
+        return [
+            Attachment::fromPath($this->arquivoPath),
+        ];
+    }
+}
+```
+
+**Enviando o e-mail com anexo:**
+
+```php
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NotificacaoComAnexo;
+
+$arquivoPath = storage_path('app/documentos/relatorio.pdf');
+
+Mail::mailer('smsapi')
+    ->to('usuario@example.com', 'Nome do Usuário')
+    ->send(new NotificacaoComAnexo($arquivoPath));
+```
+
+**Múltiplos anexos:**
+
+```php
+public function attachments(): array
+{
+    return [
+        Attachment::fromPath(storage_path('app/documento1.pdf')),
+        Attachment::fromPath(storage_path('app/documento2.pdf'))
+            ->as('relatorio-final.pdf')
+            ->withMime('application/pdf'),
+    ];
+}
+```
+
+**Anexo a partir de dados:**
+
+```php
+public function attachments(): array
+{
+    return [
+        Attachment::fromData(fn () => $this->pdf, 'relatorio.pdf')
+            ->withMime('application/pdf'),
+    ];
 }
 ```
 
