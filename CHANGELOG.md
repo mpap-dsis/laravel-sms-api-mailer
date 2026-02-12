@@ -5,6 +5,13 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.1.1] - 2026-02-12
+
+### Corrigido
+- Corrigido captura do nome do arquivo dos anexos
+- Implementado fallback para capturar filename do Content-Disposition header
+- Garantido que o nome definido com `.as()` seja usado corretamente
+
 ## [1.1.0] - 2026-02-12
 
 ### Adicionado

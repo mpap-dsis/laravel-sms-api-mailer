@@ -48,8 +48,21 @@ class SmsApiTransport extends AbstractTransport
         // Processar anexos
         $attachments = [];
         foreach ($email->getAttachments() as $attachment) {
+            // Tenta pegar o nome do Content-Disposition header, senão usa getPreparedHeaders
+            $filename = $attachment->getFilename();
+            
+            // Se não tiver filename, tenta pegar do prepared headers
+            if (!$filename) {
+                $disposition = $attachment->getPreparedHeaders()->get('Content-Disposition');
+                if ($disposition) {
+                    $filename = $disposition->getParameter('filename') ?: $attachment->getName();
+                } else {
+                    $filename = $attachment->getName();
+                }
+            }
+            
             $attachments[] = [
-                'filename' => $attachment->getName(),
+                'filename' => $filename ?: 'attachment',
                 'content' => base64_encode($attachment->getBody()),
                 'mime_type' => $attachment->getContentType(),
             ];
