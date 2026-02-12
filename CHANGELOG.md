@@ -5,6 +5,19 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.1.0] - 2026-02-12
+
+### Adicionado
+- Suporte completo para envio de anexos (attachments)
+- Anexos são codificados em base64 e enviados via API
+- Suporte para múltiplos anexos por e-mail
+- Preservação de nome do arquivo e MIME type dos anexos
+
+### Técnico
+- Implementação de processamento de anexos no método `doSend()`
+- Anexos são incluídos no payload JSON como array `anexos`
+- Cada anexo contém: `filename`, `content` (base64) e `mime_type`
+
 ## [1.0.0] - 2024-01-XX
 
 ### Adicionado

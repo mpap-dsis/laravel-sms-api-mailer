@@ -299,6 +299,8 @@ public function attachments(): array
 
 O transport converte automaticamente os dados do Laravel Mail para o formato esperado pela API do SMS:
 
+**Sem anexos:**
+
 ```json
 {
     "data_envio": "2024-01-15T10:30:00+00:00",
@@ -309,6 +311,36 @@ O transport converte automaticamente os dados do Laravel Mail para o formato esp
     "mensagem": "<html>Conteúdo do e-mail...</html>"
 }
 ```
+
+**Com anexos:**
+
+```json
+{
+    "data_envio": "2024-01-15T10:30:00+00:00",
+    "sistema": "uuid-do-sistema",
+    "destinatario": "Nome do Destinatário",
+    "email": "email@example.com",
+    "assunto": "Assunto do E-mail",
+    "mensagem": "<html>Conteúdo do e-mail...</html>",
+    "anexos": [
+        {
+            "filename": "documento.pdf",
+            "content": "JVBERi0xLjQKJeLjz9MK...",
+            "mime_type": "application/pdf"
+        },
+        {
+            "filename": "relatorio.xlsx",
+            "content": "UEsDBBQABgAIAAAAIQBi7p1...",
+            "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+    ]
+}
+```
+
+**Observações:**
+- Os anexos são codificados em base64 no campo `content`
+- O campo `anexos` só é incluído quando há anexos no e-mail
+- Suporta múltiplos anexos em um único e-mail
 
 ## Testes
 

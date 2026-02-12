@@ -45,6 +45,20 @@ class SmsApiTransport extends AbstractTransport
             'mensagem' => $email->getHtmlBody() ?: $email->getTextBody(),
         ];
 
+        // Processar anexos
+        $attachments = [];
+        foreach ($email->getAttachments() as $attachment) {
+            $attachments[] = [
+                'filename' => $attachment->getName(),
+                'content' => base64_encode($attachment->getBody()),
+                'mime_type' => $attachment->getContentType(),
+            ];
+        }
+
+        if (!empty($attachments)) {
+            $body['anexos'] = $attachments;
+        }
+
         $client = new Client();
 
         $client->post($this->apiUrl, [
