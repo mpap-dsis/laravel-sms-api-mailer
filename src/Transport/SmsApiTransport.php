@@ -4,6 +4,7 @@ namespace Mpap\LaravelSmsApiMailer\Transport;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use Symfony\Component\Mime\MessageConverter;
@@ -48,21 +49,49 @@ class SmsApiTransport extends AbstractTransport
         // Processar anexos
         $attachments = [];
         foreach ($email->getAttachments() as $attachment) {
-            // Tenta pegar o nome do Content-Disposition header, senão usa getPreparedHeaders
-            $filename = $attachment->getFilename();
+            $filename = null;
             
-            // Se não tiver filename, tenta pegar do prepared headers
-            if (!$filename) {
-                $disposition = $attachment->getPreparedHeaders()->get('Content-Disposition');
+            // Debug: Log da classe do anexo
+            Log::debug('Attachment Class: ' . get_class($attachment));
+            
+            // Método 1: Tentar getFilename()
+            if (method_exists($attachment, 'getFilename')) {
+                $filename = $attachment->getFilename();
+                Log::debug('getFilename(): ' . ($filename ?: 'null'));
+            }
+            
+            // Método 2: Tentar pegar do Content-Disposition header
+            if (!$filename && method_exists($attachment, 'getPreparedHeaders')) {
+                $headers = $attachment->getPreparedHeaders();
+                $disposition = $headers->get('Content-Disposition');
                 if ($disposition) {
-                    $filename = $disposition->getParameter('filename') ?: $attachment->getName();
-                } else {
-                    $filename = $attachment->getName();
+                    Log::debug('Content-Disposition exists');
+                    if (method_exists($disposition, 'getParameter')) {
+                        $filename = $disposition->getParameter('filename');
+                        Log::debug('Disposition filename: ' . ($filename ?: 'null'));
+                    }
+                    // Tentar getBodyAsString também
+                    if (!$filename && method_exists($disposition, 'getBodyAsString')) {
+                        $dispString = $disposition->getBodyAsString();
+                        Log::debug('Disposition string: ' . $dispString);
+                    }
                 }
             }
             
+            // Método 3: Tentar getName()
+            if (!$filename && method_exists($attachment, 'getName')) {
+                $filename = $attachment->getName();
+                Log::debug('getName(): ' . ($filename ?: 'null'));
+            }
+            
+            // Método 4: Listar todos os headers disponíveis
+            if (!$filename && method_exists($attachment, 'getPreparedHeaders')) {
+                $headers = $attachment->getPreparedHeaders();
+                Log::debug('All headers: ' . json_encode($headers->toString()));
+            }
+            
             $attachments[] = [
-                'filename' => $filename ?: 'attachment',
+                'filename' => $filename ?: 'attachment.pdf',
                 'content' => base64_encode($attachment->getBody()),
                 'mime_type' => $attachment->getContentType(),
             ];
