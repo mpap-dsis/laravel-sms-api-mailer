@@ -4,7 +4,6 @@ namespace Mpap\LaravelSmsApiMailer\Transport;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use Symfony\Component\Mime\MessageConverter;
@@ -38,7 +37,7 @@ class SmsApiTransport extends AbstractTransport
         }
 
         $body = [
-            'data_envio' => now()->toIso8601String(),
+            'data_envio' => now()->format('Y-m-d'),  // Formato: YYYY-MM-DD conforme documentação
             'sistema' => $this->sistema,
             'destinatario' => $to->getName() ?: $to->getAddress(),
             'email' => $to->getAddress(),
@@ -51,49 +50,20 @@ class SmsApiTransport extends AbstractTransport
         foreach ($email->getAttachments() as $attachment) {
             $filename = null;
             
-            // Debug: Log da classe do anexo
-            Log::debug('Attachment Class: ' . get_class($attachment));
-            
-            // Método 1: Tentar getFilename()
+            // Tentar getFilename()
             if (method_exists($attachment, 'getFilename')) {
                 $filename = $attachment->getFilename();
-                Log::debug('getFilename(): ' . ($filename ?: 'null'));
             }
             
-            // Método 2: Tentar pegar do Content-Disposition header
-            if (!$filename && method_exists($attachment, 'getPreparedHeaders')) {
-                $headers = $attachment->getPreparedHeaders();
-                $disposition = $headers->get('Content-Disposition');
-                if ($disposition) {
-                    Log::debug('Content-Disposition exists');
-                    if (method_exists($disposition, 'getParameter')) {
-                        $filename = $disposition->getParameter('filename');
-                        Log::debug('Disposition filename: ' . ($filename ?: 'null'));
-                    }
-                    // Tentar getBodyAsString também
-                    if (!$filename && method_exists($disposition, 'getBodyAsString')) {
-                        $dispString = $disposition->getBodyAsString();
-                        Log::debug('Disposition string: ' . $dispString);
-                    }
-                }
-            }
-            
-            // Método 3: Tentar getName()
+            // Fallback: tentar getName()
             if (!$filename && method_exists($attachment, 'getName')) {
                 $filename = $attachment->getName();
-                Log::debug('getName(): ' . ($filename ?: 'null'));
             }
             
-            // Método 4: Listar todos os headers disponíveis
-            if (!$filename && method_exists($attachment, 'getPreparedHeaders')) {
-                $headers = $attachment->getPreparedHeaders();
-                Log::debug('All headers: ' . json_encode($headers->toString()));
-            }
-            
+            // Formato esperado pela API do SMS: ["nome_arquivo.ext", "base64"]
             $attachments[] = [
-                'filename' => $filename ?: 'attachment.pdf',
-                'content' => base64_encode($attachment->getBody()),
-                'mime_type' => $attachment->getContentType(),
+                $filename ?: 'attachment.pdf',
+                base64_encode($attachment->getBody())
             ];
         }
 

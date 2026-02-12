@@ -5,6 +5,15 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.1.2] - 2026-02-12
+
+### Corrigido
+- **Formato de anexos corrigido conforme documentação oficial da API SMS**
+- Anexos agora são enviados como array: `["nome_arquivo.ext", "base64"]` ao invés de objeto
+- Formato de `data_envio` corrigido para `YYYY-MM-DD` conforme documentação
+- Código simplificado e otimizado
+- Removidos logs de debug desnecessários
+
 ## [1.1.1] - 2026-02-12
 
 ### Corrigido
